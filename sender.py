@@ -59,7 +59,3 @@ connect_to_wifi(wlan, "ssid", "password")
 
 # init request token to communicate with the backend
 access_token=get_access_token()
-
-response = get('https://api.openweathermap.org/data/2.5/weather', parameters)
-print(response.text)
-weather_data = response.json()
