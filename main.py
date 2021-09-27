@@ -1,89 +1,118 @@
-import machine
-import hcsr04
+#importation de dependances
+
+from hcsr04 import HCSR04
+from machine import Pin, I2C
 import time
+import utils
+import servo
 import uasyncio
-import connectionwifi
-import urequests
-import json
 
-from time import sleep
-import random
-# j' importe le module Pca9685
-import pca9685
-#j' importe la classe servos 
-import servos
+###   Définition des variables globales   ###
 
+# définition des sensor
+sensor1 = HCSR04(trigger_pin = utils.trigger_pin_sensor1, echo_pin = utils.echo_pin_sensor1, echo_timeout_us = 1000000) #sensor 1
+sensor2 = HCSR04(trigger_pin = utils.trigger_pin_sensor2, echo_pin = utils.echo_pin_sensor2, echo_timeout_us = 1000000) #sensor 2
+sensor3 = HCSR04(trigger_pin = utils.trigger_pin_sensor3, echo_pin = utils.echo_pin_sensor3, echo_timeout_us = 1000000) #sensor 3
+
+# etat des sensor, 0 pour place vide et 1 pour place occupée
+state_sensor1 = 0 
+state_sensor2 = 0
+state_sensor3 = 0
+
+# servo moteur
 sda=Pin(21)
 scl=Pin(22)
 i2c=I2C(sda=sda ,scl=scl)
-##je teste si c'est bien scanne 
-print(i2c.scan())
-je signaler 
-pca=pca9685.Pca9685(i2c=i2c)
+servo_motor=servo.Servos(i2c=i2c)
 
-#je cree le premier servo
-servo1V=servo.Servos(i2c=i2c) #servo vertical
+# Buzzer
+buzzer = Pin(utils.buzzer_pin, Pin.OUT)
 
+maxPlace = 3 # nombre de place du parking
+freePlace = 3 # nombre de place disponible au depart
 
+direction = 2 # direction de la voiture, 1 pour voiture entrante, 0 pour voiture sortante et 2 pour aucune
 
-# j' ai mis different trigger derriere le panneau
-#exemple trig =13 echo=12
+###     Définition des fonctions      ###
 
+# Pour ouvrir la barriere
+def ouvrir():
+    servo.duty(70)
 
+# Pour fermer la barriere
+def fermer():
+    servo.duty(130)
 
-#### 
+# Pour émettre un son avec le buzzer en cas de probleme
+def warning_sound():
+    buzzer.value(1)
+    time.sleep_ms(1000)
+    buzzer.value(0)
+    time.sleep_ms(1000)
+    buzzer.value(1)
+    time.sleep_ms(1000)
+    buzzer.value(0)
 
+# Pour émettre un son avec le buzzer de success
+def success_sound():
+    buzzer.value(1)
+    time.sleep_ms(1000)
+    buzzer.value(0)
 
-### je me  connecte a mon point acces
-connectionwifi.connect("RasanaPanta","sylvieTchaa1971")
+# Pour ecouter un sensor
+async def listenSensor(sensor, state, name):
+    old_state = state
+    while True:
+        distance = sensor.distance_cm()
+        print(name + " " + distance,' cm')
+        if (distance < 6 and distance > 0): # si une voiture est détectée
+            if old_state == 0: # si la place en question etait vide
+                old_state = 1
+                if direction == 1: # Si la direction est entrante
+                    direction = 2
+                    freePlace = freePlace - 1
+                    fermer() # fermer le parking
+                    success_sound()
+                    # TODO: logic pour dire au backend qu'une place a été occuoée
+        else: # si aucune voiture n'est détectée
+            if old_state == 1: # si la place en question etait aucupée
+                old_state = 0
+                ouvrir() # ouvrir le parking pour que la voiture sorte
+                success_sound()
+        time.sleep_ms(100)
 
-## j' entre mes credential solartracker
-username="nomUilisateurde solar"
-password="mot de passe solar"
-data={"username":username ,"password":password}
+# Fonction exécutée lorsqu'une voiture est détectée
+def listenCapteur(pin):
+    print("Car detected")
+    global direction
+    global freePlace
+    global maxPlace
+    if direction == 0: # si la direction est sortante
+        direction = 2
+        freePlace = freePlace + 1
+        fermer() # Fermer le parking
+        # TODO: logic pour dire au backend qu'une place a étée libérée
+    else:
+        if freePlace < maxPlace: # Si il y a au moins une place libre
+            ouvrir()
+            direction = 1
+        else: # Si pas de place libre
+            warning_sound()
 
-### je definis le type de donnees je veu envoyer
+# Initialisation du capteur de presence a l'entrée
+pin_capteur = Pin(utils.pin_capteur, Pin.IN)
+pin_capteur.irq(trigger = Pin.IRQ_RISING, handler = listenCapteur) # listenCapteur sera appellé a chaque foid qu'une voiture sera détectée
 
-requests_headers={
-    'content_Type':'application/json'
-}
+# Initialisation des sensor
+event_loop = uasyncio.get_event_loop()
 
-## je fais une premiere tentative de connection pour obtenir le acces_token
-request=urequests.post("https://solartracking.herokuapp.com/api/user/login/",json=data,headers=requests_headers)
-user=request.json()
-access_token=user['access_token']
-
-## je modifie une dernier fois l ' entete pour donner le token access
-requests_headers={'content-Type':'application/json' ,'Authorization':'Bearer'+ ' '+access_token}
-
-
-
-
-async def ultrasonic(trig ,echo):
-    hcsr04.HCSR04(trigger_pin=trig, echo_pin=echo, echo_timeout_us=1000000)
-    await uasyncio.sleep_ms(1000)
-    
-rV=range(0,90)
-async def servo_depla(pin):
-    global setup
-    while True :
-        
-        
-        
-#pin je met au 32
-async def  buzzer_read(pin):
-    buzzer = machine.PWM(machine.Pin(pin, machine.Pin.OUT))
-    buzzer.freq(4186)
-    buzzer.duty(0)
-    await uasyncio.sleep_ms(2000)
+event_loop.create_task(listenSensor(sensor1, state_sensor1, "parking slot 1"))
+event_loop.create_task(listenSensor(sensor2, state_sensor2, "parking slot 2"))
+event_loop.create_task(listenSensor(sensor3, state_sensor3, "parking slot 3"))
+event_loop.run_forever()
 
 while True:
-    distance = ultrasonic.distance_cm()
-    print('Distance:', distance, 'cm', '|', distance/2.54, 'inch')
-    if distance <= 10:
-        buzzer.duty(512)
-        led.on()
-    else:
-        buzzer.duty(0)
-        led.off()
-    time.sleep_ms(1000)
+    if freePlace < 3:
+        print("free place: ", freePlace)
+
+

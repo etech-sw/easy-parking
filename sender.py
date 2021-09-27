@@ -45,9 +45,10 @@ def get(url, params=None):
 #           ps_3: parking slot 3
 #           vehicle_detected: vehicle detection at entrance
 #           door: parking entrance status
-def push_sensor_data(url, data):
+def push_sensor_data(url, data, id):
+    data={"data":data ,"id":id}
     request_header={'content-Type':'application/json' ,'Authorization':'Bearer'+ ' ' + access_token}
-    request_url = "https://solartracking.herokuapp.com/api/user/login/"
+    request_url = "https://solartracking.herokuapp.com/api/data"
     res = urequests.post(request_url, json=data, headers=request_header).json()
     print(res)
 

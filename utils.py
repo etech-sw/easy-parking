@@ -3,15 +3,14 @@
 trigger_pin_sensor1 = 5
 echo_pin_sensor1 = 18
 
-trigger_pin_sensor2 = 5
-echo_pin_sensor2 = 18
+trigger_pin_sensor2 = 13
+echo_pin_sensor2 = 12
 
-trigger_pin_sensor3 = 5
-echo_pin_sensor3 = 18
+trigger_pin_sensor3 = 27
+echo_pin_sensor3 = 14
 
-trigger_pin_capteur = 5
-echo_pin_capteur = 18
+pin_capteur = 17
 
-servo_pin = 4
+servo_pin = 1
 
-buzzer_pin = 4
+buzzer_pin = 32
