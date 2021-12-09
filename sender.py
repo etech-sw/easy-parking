@@ -2,12 +2,6 @@ import network, urequests
 #from urllib.parse import urlencode
 from parse import urlencode # uncomment the above line and comment out this one if the code above worked in the REPL
 
-parameters = {
-    "q":"Minneapolis",
-    "appid":"abcdefghijklmnop1234567891234567",
-    "units":"imperial"
-}
-
 username="nomUilisateurde solar"
 password="mot de passe solar"
 data={"username":username ,"password":password}
@@ -26,7 +20,7 @@ def connect_to_wifi(wlan, ssid, password):
 
 def get_access_token(url, params=None):
     request_header={'content_Type':'application/json'}
-    request_url = "https://solartracking.herokuapp.com/api/user/login/"
+    request_url = "https://easyparkingiot.herokuapp.com/api/user/login/"
     request_token = urequests.post(request_url, json=data, headers=request_header)
     token = request_token.json()
     return token['access_token']
@@ -48,7 +42,7 @@ def get(url, params=None):
 def push_sensor_data(url, data, id):
     data={"data":data ,"id":id}
     request_header={'content-Type':'application/json' ,'Authorization':'Bearer'+ ' ' + access_token}
-    request_url = "https://solartracking.herokuapp.com/api/data"
+    request_url = "https://easyparkingiot.herokuapp.com/api/data"
     res = urequests.post(request_url, json=data, headers=request_header).json()
     print(res)
 

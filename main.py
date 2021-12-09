@@ -61,6 +61,8 @@ def success_sound():
 
 # Pour ecouter un sensor
 async def listenSensor(sensor, state, name):
+    global direction
+    global freePlace
     old_state = state
     while True:
         distance = sensor.distance_cm()
@@ -79,7 +81,7 @@ async def listenSensor(sensor, state, name):
                 old_state = 0
                 ouvrir() # ouvrir le parking pour que la voiture sorte
                 success_sound()
-        time.sleep_ms(100)
+        time.sleep_ms(1000)
 
 # Fonction exécutée lorsqu'une voiture est détectée
 def listenCapteur(pin):
@@ -115,4 +117,4 @@ while True:
     if freePlace < 3:
         print("free place: ", freePlace)
 
-
+print("Exited main loop")

@@ -11,6 +11,6 @@ echo_pin_sensor3 = 14
 
 pin_capteur = 17
 
-servo_pin = 1
+servo_pin = 0
 
 buzzer_pin = 32
