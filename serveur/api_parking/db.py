@@ -3,15 +3,16 @@ import sqlite3
 conn = sqlite3.connect("parking.sqlite")
 
 cursor = conn.cursor()
-sql_query = """CREATE TABLE Parking (
+sql_query = """CREATE TABLE PARKING_SMART (
     
-    parking_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    slot_id INTEGER NOT NULL,
-    door_id INTEGER NOT NULL,
-    slot_type TEXT NOT NULL,
-    slot_status BOOLEAN NOT NULL,
-    door_status BOOLEAN NOT NULL,
-    created_at TIMESTAMP NOT NULL    
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    parking_id INTEGER NOT NULL,
+    slot_id INTEGER,
+    door_id INTEGER,
+    slot_type TEXT,
+    slot_status BOOLEAN,
+    door_status BOOLEAN,
+    created_at DATETIME    
 )"""
 
 cursor.execute(sql_query)

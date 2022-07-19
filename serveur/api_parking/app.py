@@ -20,11 +20,11 @@ def parkings():
     cursor = conn.cursor()
 
     if request.method == "GET":
-        cursor = conn.execute("SELECT * FROM Parking ")
+        cursor = conn.execute("SELECT * FROM PARKING_SMART ")
 
         parkings=[
 
-            dict (id_parking=row[0], slot_id=row[1], door_id=row[2], slot_type=row[3], slot_status=row[4], door_status=row[5], created_at=row[6])
+            dict (id=row[0], parking_id=row[1],slot_id=row[2], door_id=row[3], slot_type=row[4], slot_status=row[5], door_status=row[6], created_at=row[7])
             for row in cursor.fetchall()
         ]
 
@@ -32,15 +32,17 @@ def parkings():
             return jsonify(parkings)
 
     if request.method == "POST":
-        new_slot_id = request.form["id_place"]
-        new_door_id = request.form["id_porte"]
-        new_slot_type = request.form["type_place"]
-        new_slot_status = request.form["status_place"]
-        new_door_status = request.form["status_porte"]
-        new_created_at = request.form["time"]
-        sql = """INSERT INTO Parking (slot_id,door_id,slot_type,slot_status,door_status,created_at) VALUES (?,?,?,?,?,?) """
+        request.form= request.get_json() 
+        new_parking_id = request.form["parking_id"]
+        new_slot_id = request.form["slot_id"]
+        new_door_id = request.form["door_id"]
+        new_slot_type = request.form["slot_type"]
+        new_slot_status = request.form["slot_status"]
+        new_door_status = request.form["door_status"]
+        new_created_at = request.form["created_at"]
+        sql = """INSERT INTO PARKING_SMART (parking_id,slot_id,door_id,slot_type,slot_status,door_status,created_at) VALUES (?,?,?,?,?,?,?) """
 
-        cursor = cursor.execute(sql, (new_slot_id,new_door_id,new_slot_type,new_slot_status,new_door_status,new_created_at))
+        cursor = cursor.execute(sql, (new_parking_id,new_slot_id,new_door_id,new_slot_type,new_slot_status,new_door_status,new_created_at))
 
         conn.commit()
 
@@ -55,10 +57,10 @@ def rechercher_parking(id):
     parking = None
 
     if request.method== "GET":
-        cursor.execute("SELECT * FROM Parking WHERE parking_id=?",(id,))
+        cursor.execute("SELECT * FROM PARKING_SMART WHERE parking_id=?",(id,))
         parkings=[
-
-            dict (id_parking=row[0], slot_id=row[1], door_id=row[2], slot_type=row[3], slot_status=row[4], door_status=row[5], created_at=row[6])
+            
+            dict (id=row[0], parking_id=row[1],slot_id=row[2], door_id=row[3], slot_type=row[4], slot_status=row[5], door_status=row[6], created_at=row[7])
             for row in cursor.fetchall()
         ]
 
