@@ -12,13 +12,12 @@ class Place(db.Model):
     typ = db.Column(db.String(20), nullable=False)
     sta = db.Column(db.Boolean, nullable=False)
 
-#  afficher une sortie au format json
-
+    #  afficher une sortie au format json
     def  json(self):
         return{'id': self.id, 'type': self.typ, 'status': self.sta
         }
-#  ajouter une place de parking
-
+    
+    #  ajouter une place de parking
     def ajouter_place(_typ,_sta):
         new_place = Place(typ=_typ, sta=_sta) 
         db.session.add(new_place)

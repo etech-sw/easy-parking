@@ -1,7 +1,15 @@
 from places import *
 
-#  obtenr toute les laces de notre bd
+@app.route('/data', methods=['POST'])
+def ajouter_place():
+    
+    request_data = request.get_json()  # recuperer le donnees du client
+    Place.ajouter_place(request_data["type"], request_data["statut"]
+                    )
+    response = Response("place ajouter", 201, mimetype='application/json')
+    return response
 
+#  obtenr toute les laces de notre bd
 @app.route('/places', methods=['GET'])
 def get_places():
    
